@@ -101,4 +101,4 @@ webrtc_streamer(key="virtual-painter", video_processor_factory=VideoProcessor, r
 
 # Display Paint Window
 st.subheader("Paint Window")
-st.image(cv2.cvtColor(paintWindow, cv2.COLOR_BGR2RGB), use_column_width=True)
+st.image(cv2.cvtColor(paintWindow, cv2.COLOR_BGR2RGB), use_container_width=True)
