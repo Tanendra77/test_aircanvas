@@ -70,14 +70,17 @@ class VideoProcessor(VideoProcessorBase):
             cnt = max(cnts, key=cv2.contourArea)
             ((x, y), radius) = cv2.minEnclosingCircle(cnt)
             M = cv2.moments(cnt)
-            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+            if M["m00"] != 0:
+                center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+            else:
+                center = None
 
             # Toolbar actions
-            if center[1] <= 65:
+            if center and center[1] <= 65:
                 if 40 <= center[0] <= 140:  # Clear button (toolbar)
                     st.session_state.points = [deque(maxlen=1024) for _ in range(4)]
                     st.session_state.paintWindow[:, :] = 255
-            else:
+            elif center:
                 points[st.session_state.colorIndex].appendleft(center)
 
         # Draw on the paint window
