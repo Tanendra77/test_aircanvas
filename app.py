@@ -1,19 +1,21 @@
-st.title("Magpasa ng papel pang obserba ng sintomas")
-st.write('1. Piliin ang araw NA NAKASULAT SA PAPEL ng pasyente.')
-date = st.date_input('Araw ng pag record')
-st.write('2. Iclick ang allow sa pag gamit ng camera at picturan ang buong papel o mag upload ng larawan ng papel.')
-st.write('3. Intayin ang kumpirmasyon na naupload ang resulta')
-st.title("")
-st.title("")
-cam = st.camera_input(label='Kunan ng letrato ang papel',disabled=False)
-file = st.file_uploader('O mag upload ng larawan ng papel', type=["png", "jpg", "jpeg"])
-image_main = None
-if cam is not None:
-    image_main = cam
-elif file is not None:
-    image_main = file
-if image_main is not None:
-    img = Image.open(image_main)
-    with st.spinner('Submission in progress'):
-        img.save("./inputs/test.jpg")
-        run_analyzer('test.jpg')
+import streamlit as st
+from streamlit_webrtc import webrtc_streamer
+import av
+import cv2
+
+st.title("My first Streamlit app")
+st.write("Hello, world")
+
+threshold1 = st.slider("Threshold1", min_value=0, max_value=1000, step=1, value=100)
+threshold2 = st.slider("Threshold2", min_value=0, max_value=1000, step=1, value=200)
+
+
+def callback(frame):
+    img = frame.to_ndarray(format="bgr24")
+
+    img = cv2.cvtColor(cv2.Canny(img, threshold1, threshold2), cv2.COLOR_GRAY2BGR)
+
+    return av.VideoFrame.from_ndarray(img, format="bgr24")
+
+
+webrtc_streamer(key="example", video_frame_callback=callback)
