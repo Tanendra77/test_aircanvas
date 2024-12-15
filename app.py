@@ -46,17 +46,17 @@ points = st.session_state.points
 
 # Video Processor for Streamlit WebRTC
 class VideoProcessor(VideoProcessorBase):
-    def __init__(self):
-        self.lower_hsv = np.array([lower_hue, lower_saturation, lower_value])
-        self.upper_hsv = np.array([upper_hue, upper_saturation, upper_value])
-
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
+        # Update HSV bounds dynamically
+        lower_hsv = np.array([lower_hue, lower_saturation, lower_value])
+        upper_hsv = np.array([upper_hue, upper_saturation, upper_value])
+
         img = frame.to_ndarray(format="bgr24")
         img = cv2.flip(img, 1)  # Flip horizontally
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
         # Create mask for marker detection
-        mask = cv2.inRange(hsv, self.lower_hsv, self.upper_hsv)
+        mask = cv2.inRange(hsv, lower_hsv, upper_hsv)
         kernel = np.ones((5, 5), np.uint8)
         mask = cv2.erode(mask, kernel, iterations=1)
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
@@ -76,7 +76,7 @@ class VideoProcessor(VideoProcessorBase):
             if center[1] <= 65:
                 if 40 <= center[0] <= 140:  # Clear button (toolbar)
                     st.session_state.points = [deque(maxlen=1024) for _ in range(4)]
-                    paintWindow[:, :] = 255
+                    st.session_state.paintWindow[:, :] = 255
             else:
                 points[st.session_state.colorIndex].appendleft(center)
 
