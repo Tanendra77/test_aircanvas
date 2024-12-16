@@ -72,16 +72,15 @@ class VideoProcessor(VideoProcessorBase):
             M = cv2.moments(cnt)
             if M["m00"] != 0:
                 center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-            else:
-                center = None
 
             # Toolbar actions
             if center and center[1] <= 65:
                 if 40 <= center[0] <= 140:  # Clear button (toolbar)
                     st.session_state.points = [deque(maxlen=1024) for _ in range(4)]
                     st.session_state.paintWindow[:, :] = 255
-            elif center:
-                points[st.session_state.colorIndex].appendleft(center)
+            else:
+                if center:
+                    points[st.session_state.colorIndex].appendleft(center)
 
         # Draw on the paint window
         for i, point_set in enumerate(points):
@@ -94,9 +93,14 @@ class VideoProcessor(VideoProcessorBase):
         combined = cv2.addWeighted(img, 0.7, paintWindow, 0.3, 0)
         return av.VideoFrame.from_ndarray(combined, format="bgr24")
 
-# WebRTC Configuration for STUN server
+# WebRTC Configuration for STUN servers
 RTC_CONFIGURATION = {
-    "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
+    "iceServers": [
+        {"urls": ["stun:stun.l.google.com:19302"]},
+        {"urls": ["stun:stun1.l.google.com:19302"]},
+        {"urls": ["stun:stun2.l.google.com:19302"]},
+        {"urls": ["stun:global.stun.twilio.com:3478"]}
+    ]
 }
 
 # Streamlit WebRTC component
@@ -104,4 +108,18 @@ webrtc_streamer(key="virtual-painter", video_processor_factory=VideoProcessor, r
 
 # Display Paint Window
 st.subheader("Paint Window")
-st.image(cv2.cvtColor(paintWindow, cv2.COLOR_BGR2RGB), use_container_width=True)
+st.image(cv2.cvtColor(paintWindow, cv2.COLOR_BGR2RGB), use_column_width=True)
+
+# Fallback to OpenCV for local testing
+use_opencv = st.sidebar.checkbox("Use Local Camera (OpenCV)", value=False)
+if use_opencv:
+    cap = cv2.VideoCapture(0)
+    stframe = st.empty()
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            st.error("Unable to access camera.")
+            break
+        frame = cv2.flip(frame, 1)
+        stframe.image(frame, channels="BGR", use_container_width=True)
+    cap.release()
