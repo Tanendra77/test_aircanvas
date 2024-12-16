@@ -25,19 +25,19 @@ colors = [
 ]
 color_names = ["Blue", "Green", "Red", "Yellow"]
 
-# Ensure session_state keys are initialized
+# Update the selected color and sync with session state
+selected_color = st.sidebar.radio("Brush Color", color_names, index=0)
 if "colorIndex" not in st.session_state:
-    st.session_state.colorIndex = 0
+    st.session_state.colorIndex = color_names.index(selected_color)
+else:
+    st.session_state.colorIndex = color_names.index(selected_color)
 
+# Initialize persistent states
 if "paintWindow" not in st.session_state:
     st.session_state.paintWindow = np.ones((471, 636, 3), dtype=np.uint8) * 255
 
 if "points" not in st.session_state:
     st.session_state.points = [deque(maxlen=1024) for _ in range(4)]
-
-# Sidebar Brush Color Selector
-selected_color = st.sidebar.radio("Brush Color", color_names, index=st.session_state.colorIndex)
-st.session_state.colorIndex = color_names.index(selected_color)
 
 # Clear painting action
 if st.sidebar.button("Clear Painting"):
