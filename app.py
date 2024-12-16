@@ -8,35 +8,20 @@ import av
 # Streamlit App Title
 st.title("Home Decor")
 
-# Brush settings controls in the main app area
-st.header("Marker and Brush Settings")
+# Default HSV values
+upper_hue = 153
+upper_saturation = 255
+upper_value = 255
+lower_hue = 64
+lower_saturation = 72
+lower_value = 49
 
-# Controls for HSV values
-col1, col2, col3 = st.columns(3)
-with col1:
-    upper_hue = st.slider("Upper Hue", 0, 180, 153)
-    lower_hue = st.slider("Lower Hue", 0, 180, 64)
-with col2:
-    upper_saturation = st.slider("Upper Saturation", 0, 255, 255)
-    lower_saturation = st.slider("Lower Saturation", 0, 255, 72)
-with col3:
-    upper_value = st.slider("Upper Value", 0, 255, 255)
-    lower_value = st.slider("Lower Value", 0, 255, 49)
-
-# Brush color selection
 colors = [
     (255, 0, 0),  # Blue
     (0, 255, 0),  # Green
     (0, 0, 255),  # Red
     (0, 255, 255),  # Yellow
 ]
-color_names = ["Blue", "Green", "Red", "Yellow"]
-selected_color = st.radio("Brush Color", color_names, index=0)
-
-if "colorIndex" not in st.session_state:
-    st.session_state.colorIndex = color_names.index(selected_color)
-else:
-    st.session_state.colorIndex = color_names.index(selected_color)
 
 # Initialize persistent states
 if "paintWindow" not in st.session_state:
@@ -102,4 +87,33 @@ class VideoProcessor(VideoProcessorBase):
         combined = cv2.addWeighted(img, 0.7, paintWindow, 0.3, 0)
         return av.VideoFrame.from_ndarray(combined, format="bgr24")
 
-# WebRTC Configura
+# WebRTC Configuration for STUN servers
+RTC_CONFIGURATION = {
+    "iceServers": [
+        {"urls": ["stun:stun.l.google.com:19302"]},
+        {"urls": ["stun:stun1.l.google.com:19302"]},
+        {"urls": ["stun:stun2.l.google.com:19302"]},
+        {"urls": ["stun:global.stun.twilio.com:3478"]}
+    ]
+}
+
+# Streamlit WebRTC component
+webrtc_streamer(key="home-decor", video_processor_factory=VideoProcessor, rtc_configuration=RTC_CONFIGURATION)
+
+# Display Paint Window
+st.subheader("Paint Window")
+st.image(cv2.cvtColor(paintWindow, cv2.COLOR_BGR2RGB), use_column_width=True)
+
+# Fallback to OpenCV for local testing
+use_opencv = st.checkbox("Use Local Camera (OpenCV)", value=False)
+if use_opencv:
+    cap = cv2.VideoCapture(0)
+    stframe = st.empty()
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            st.error("Unable to access camera.")
+            break
+        frame = cv2.flip(frame, 1)
+        stframe.image(frame, channels="BGR", use_container_width=True)
+    cap.release()
