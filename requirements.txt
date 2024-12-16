@@ -4,3 +4,4 @@ streamlit
 streamlit-webrtc
 av
 Pillow
+aiortc
