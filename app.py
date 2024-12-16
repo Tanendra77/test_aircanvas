@@ -31,7 +31,7 @@ if "points" not in st.session_state:
     st.session_state.points = [deque(maxlen=1024) for _ in range(4)]
 
 # Clear painting action
-if st.button("Clear Painting"):
+if st.button("Clear"):
     st.session_state.paintWindow[:, :] = 255  # Reset the paint window
     st.session_state.points = [deque(maxlen=1024) for _ in range(4)]  # Clear all points
 
@@ -101,7 +101,7 @@ RTC_CONFIGURATION = {
 webrtc_streamer(key="home-decor", video_processor_factory=VideoProcessor, rtc_configuration=RTC_CONFIGURATION)
 
 # Display Paint Window
-st.subheader("Paint Window")
+st.subheader("Window")
 st.image(cv2.cvtColor(paintWindow, cv2.COLOR_BGR2RGB), use_column_width=True)
 
 # Fallback to OpenCV for local testing
