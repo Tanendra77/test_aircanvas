@@ -96,13 +96,13 @@ class VideoProcessor(VideoProcessorBase):
         combined = cv2.addWeighted(img, 0.7, paintWindow, 0.3, 0)
         return av.VideoFrame.from_ndarray(combined, format="bgr24")
 
-# WebRTC Configuration for STUN servers
+# WebRTC Configuration with TURN server
 RTC_CONFIGURATION = {
     "iceServers": [
-        {"urls": ["stun:stun.l.google.com:19302"]},
-        {"urls": ["stun:stun1.l.google.com:19302"]},
-        {"urls": ["stun:stun2.l.google.com:19302"]},
-        {"urls": ["stun:global.stun.twilio.com:3478"]}
+        {"urls": ["turn:relay1.expressturn.com:3478"], 
+         "username": "ef5041EN9F2SOEZ15M", 
+         "credential": "dGaqODwPn2k2GI"},
+        {"urls": ["stun:stun.l.google.com:19302"]},  # Optional fallback STUN
     ]
 }
 
